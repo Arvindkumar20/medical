@@ -1,0 +1,46 @@
+import "dotenv/config";
+import express from "express";
+import { connectDB } from "./config/db.js";
+import { authRouter } from "./routes/authRoutes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import { productRouter } from "./routes/productRoutes.js";
+import { storeRouter } from "./routes/storeRoutes.js";
+// import { protect } from "./middlewares/authMiddleware.js";
+import { categoryRoute } from "./routes/categoryRoutes.js";
+import { parentCategory } from "./routes/parentCategoryRoutes.js";
+import { orderRouter } from "./routes/orderRoutes.js";
+import { medicalUploadRouter } from "./routes/medicalUploadRoutes.js";
+// import { paymentRouter } from "./routes/paymentRoutes.js";
+
+const app = express();
+
+// connect to database
+connectDB();
+
+// body parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// routes
+app.use("/api/auth", authRouter);
+app.use("/api/product", productRouter);
+app.use("/api/store", storeRouter);
+app.use("/api/category", categoryRoute);
+app.use("/api/parent-category", parentCategory);
+app.use("/api/order", orderRouter);
+app.use("/api/upload-medical-report", medicalUploadRouter);
+// app.use("/api/payment", paymentRouter);
+
+// health check (optional)
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+// error handler (must be after routes)
+app.use(errorHandler);
+
+// start
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
