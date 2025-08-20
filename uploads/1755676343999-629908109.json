@@ -1,0 +1,663 @@
+[
+    {
+        "name": "Paracetamol 500mg",
+        "description": "Paracetamol 500mg is a high-quality medicine manufactured by Cipla.",
+        "price": 25,
+        "quantity": 200,
+        "images": [
+            "https://example.com/images/paracetamol_500mg.jpg"
+        ],
+       
+        "medicinCategory": "Tablet",
+        "requiresPrescription": false,
+        "sku": "MED1000",
+        "barcode": "8901000000000",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 467,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 17,
+                "width": 10,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.6,
+            "count": 182
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Cipla",
+        "expiryDate": "2026-05-01",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Amoxicillin 250mg",
+        "description": "Amoxicillin 250mg is a high-quality medicine manufactured by Sun Pharma.",
+        "price": 60,
+        "quantity": 150,
+        "images": [
+            "https://example.com/images/amoxicillin_250mg.jpg"
+        ],
+        "medicinCategory": "Drops",
+        "requiresPrescription": false,
+        "sku": "MED1001",
+        "barcode": "8901000000001",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 442,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 15,
+                "width": 6,
+                "height": 2,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.2,
+            "count": 94
+        },
+        "discount": {
+            "amount": 5,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "capsule"
+        ],
+        "manufacturer": "Sun Pharma",
+        "expiryDate": "2026-03-15",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Azithromycin 500mg",
+        "description": "Azithromycin 500mg is a high-quality medicine manufactured by Dr Reddy's.",
+        "price": 95,
+        "quantity": 180,
+        "images": [
+            "https://example.com/images/azithromycin_500mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1002",
+        "barcode": "8901000000002",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 438,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 17,
+                "width": 9,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.7,
+            "count": 198
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Dr Reddy's",
+        "expiryDate": "2027-01-20",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Cetirizine 10mg",
+        "description": "Cetirizine 10mg is a high-quality medicine manufactured by Alkem Labs.",
+        "price": 20,
+        "quantity": 300,
+        "images": [
+            "https://example.com/images/cetirizine_10mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1003",
+        "barcode": "8901000000003",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 268,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 5,
+                "width": 3,
+                "height": 2,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 3.7,
+            "count": 99
+        },
+        "discount": {
+            "amount": 5,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Alkem Labs",
+        "expiryDate": "2026-12-05",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Dolo 650mg",
+        "description": "Dolo 650mg is a high-quality medicine manufactured by Micro Labs.",
+        "price": 30,
+        "quantity": 250,
+        "images": [
+            "https://example.com/images/dolo_650mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1004",
+        "barcode": "8901000000004",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 118,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 20,
+                "width": 2,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.1,
+            "count": 113
+        },
+        "discount": {
+            "amount": 10,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Micro Labs",
+        "expiryDate": "2026-07-10",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "ORS Solution",
+        "description": "ORS Solution is a high-quality medicine manufactured by FDC Limited.",
+        "price": 35,
+        "quantity": 100,
+        "images": [
+            "https://example.com/images/ors_solution.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1005",
+        "barcode": "8901000000005",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 91,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 16,
+                "width": 3,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 3.2,
+            "count": 164
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "syrup"
+        ],
+        "manufacturer": "FDC Limited",
+        "expiryDate": "2025-12-25",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Vitamin C 500mg",
+        "description": "Vitamin C 500mg is a high-quality medicine manufactured by Zydus.",
+        "price": 50,
+        "quantity": 400,
+        "images": [
+            "https://example.com/images/vitamin_c_500mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1006",
+        "barcode": "8901000000006",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 75,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 9,
+                "width": 10,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.2,
+            "count": 64
+        },
+        "discount": {
+            "amount": 15,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Zydus",
+        "expiryDate": "2027-08-30",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Ibuprofen 400mg",
+        "description": "Ibuprofen 400mg is a high-quality medicine manufactured by Torrent Pharma.",
+        "price": 45,
+        "quantity": 220,
+        "images": [
+            "https://example.com/images/ibuprofen_400mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1007",
+        "barcode": "8901000000007",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 60,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 17,
+                "width": 6,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 3.6,
+            "count": 163
+        },
+        "discount": {
+            "amount": 5,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Torrent Pharma",
+        "expiryDate": "2026-04-18",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Pantoprazole 40mg",
+        "description": "Pantoprazole 40mg is a high-quality medicine manufactured by Cadila.",
+        "price": 70,
+        "quantity": 190,
+        "images": [
+            "https://example.com/images/pantoprazole_40mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1008",
+        "barcode": "8901000000008",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 489,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 11,
+                "width": 2,
+                "height": 1,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.1,
+            "count": 164
+        },
+        "discount": {
+            "amount": 15,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Cadila",
+        "expiryDate": "2026-09-14",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Metformin 500mg",
+        "description": "Metformin 500mg is a high-quality medicine manufactured by Lupin.",
+        "price": 55,
+        "quantity": 160,
+        "images": [
+            "https://example.com/images/metformin_500mg.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1009",
+        "barcode": "8901000000009",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 159,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 16,
+                "width": 10,
+                "height": 2,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.9,
+            "count": 103
+        },
+        "discount": {
+            "amount": 15,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Lupin",
+        "expiryDate": "2027-02-05",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Insulin Injection",
+        "description": "Insulin Injection is a high-quality medicine manufactured by Biocon.",
+        "price": 350,
+        "quantity": 80,
+        "images": [
+            "https://example.com/images/insulin_injection.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": true,
+        "sku": "MED1010",
+        "barcode": "8901000000010",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 59,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 13,
+                "width": 10,
+                "height": 5,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 3.9,
+            "count": 199
+        },
+        "discount": {
+            "amount": 10,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "injection"
+        ],
+        "manufacturer": "Biocon",
+        "expiryDate": "2025-11-20",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Cough Syrup",
+        "description": "Cough Syrup is a high-quality medicine manufactured by Cipla.",
+        "price": 90,
+        "quantity": 120,
+        "images": [
+            "https://example.com/images/cough_syrup.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1011",
+        "barcode": "8901000000011",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 125,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 17,
+                "width": 3,
+                "height": 4,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.4,
+            "count": 160
+        },
+        "discount": {
+            "amount": 5,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "syrup"
+        ],
+        "manufacturer": "Cipla",
+        "expiryDate": "2026-06-11",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Multivitamin",
+        "description": "Multivitamin is a high-quality medicine manufactured by Abbott.",
+        "price": 150,
+        "quantity": 130,
+        "images": [
+            "https://example.com/images/multivitamin.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1012",
+        "barcode": "8901000000012",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 465,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 10,
+                "width": 4,
+                "height": 2,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.5,
+            "count": 184
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "capsule"
+        ],
+        "manufacturer": "Abbott",
+        "expiryDate": "2027-03-25",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Calcium Tablet",
+        "description": "Calcium Tablet is a high-quality medicine manufactured by Mankind Pharma.",
+        "price": 85,
+        "quantity": 210,
+        "images": [
+            "https://example.com/images/calcium_tablet.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1013",
+        "barcode": "8901000000013",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 457,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 12,
+                "width": 10,
+                "height": 3,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.1,
+            "count": 147
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Mankind Pharma",
+        "expiryDate": "2026-10-02",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    },
+    {
+        "name": "Zinc Supplement",
+        "description": "Zinc Supplement is a high-quality medicine manufactured by Intas Pharma.",
+        "price": 60,
+        "quantity": 300,
+        "images": [
+            "https://example.com/images/zinc_supplement.jpg"
+        ],
+        "category": null,
+        "requiresPrescription": false,
+        "sku": "MED1014",
+        "barcode": "8901000000014",
+        "isDilated": false,
+        "specifications": {
+            "weight": {
+                "value": 69,
+                "unit": "g"
+            },
+            "dimensions": {
+                "length": 6,
+                "width": 5,
+                "height": 4,
+                "unit": "cm"
+            }
+        },
+        "variants": [],
+        "ratings": {
+            "average": 4.8,
+            "count": 194
+        },
+        "discount": {
+            "amount": 0,
+            "startDate": null,
+            "endDate": null
+        },
+        "status": "active",
+        "tags": [
+            "tablet"
+        ],
+        "manufacturer": "Intas Pharma",
+        "expiryDate": "2026-01-29",
+        "createdAt": "2025-08-20T07:40:34",
+        "updatedAt": "2025-08-20T07:40:34"
+    }
+]

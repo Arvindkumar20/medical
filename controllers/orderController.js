@@ -1,7 +1,9 @@
 // controllers/orderController.js
-import {Order} from "../models/Order.js";
+import { Order } from "../models/Order.js";
 import { validationResult } from "express-validator";
-import {logger} from "../utils/logger.js";
+import { logger } from "../utils/logger.js";
+// import { createAddress } from "../utils/addressHelper.js";
+import { createAddress } from "../utils/addressHelper.js"
 
 // Build filter from query params
 const buildFilter = (query) => {
@@ -93,11 +95,39 @@ export const createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
+
     // attach authenticated user if available
     if (!req.body.user && req.user) {
       req.body.user = req.user.id;
     }
+    const { shippingAddress, billingAddress } = req.body;
+    let savedAddresses;
+    try {
 
+      const addresses = [shippingAddress, billingAddress];
+
+
+      savedAddresses = await Promise.all(
+        addresses.map(addr =>
+          addr ? createAddress({ ...addr, user: req.user.id }) : null
+
+        )
+      );
+
+      if (!savedAddresses || savedAddresses.includes(null)) {
+        return res.status(400).json({
+          success: false,
+          message: "Some addresses could not be saved",
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Address saving problem",
+        error: error.message
+      });
+    }
+    console.log(savedAddresses)
     const {
       totalAmount,
       discountAmount = 0,
@@ -115,7 +145,7 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const order = await Order.create(req.body);
+    const order = await Order.create({ ...req.body, shippingAddress: savedAddresses[0].data.id, billingAddress: savedAddresses[0].data.id });
     res.status(201).json({ success: true, data: order });
   } catch (err) {
     logger.error("Error in createOrder:", { body: req.body, message: err.message, stack: err.stack });
@@ -217,6 +247,7 @@ export const updatePayment = async (req, res, next) => {
     if (!payment) {
       return res.status(400).json({ success: false, message: "Payment payload required" });
     }
+    
 
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });

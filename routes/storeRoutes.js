@@ -11,7 +11,6 @@ import {
 } from "../controllers/storeController.js";
 import { body, query } from "express-validator";
 import { protect } from "../middlewares/authMiddleware.js";
-
 const router = express.Router();
 
 // Public

@@ -1,5 +1,4 @@
 // models/Order.js
-
 import mongoose from "mongoose";
 import validator from "validator";
 
@@ -8,13 +7,13 @@ const orderItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
     required: [true, "Product reference is required"],
-    validate: {
-      validator: async function(v) {
-        const product = await mongoose.model("Product").findById(v);
-        return product && product.status === "active";
-      },
-      message: "Product must be active and valid"
-    }
+    // validate: {
+    //   validator: async function (v) {
+    //     const product = await mongoose.model("Product").findById(v);
+    //     return product && product.status === "active";
+    //   },
+    //   message: "Product must be active and valid"
+    // }
   },
   quantity: {
     type: Number,
@@ -34,14 +33,7 @@ const orderItemSchema = new mongoose.Schema({
   store: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Store",
-    required: [true, "Store reference is required"],
-    validate: {
-      validator: async function(v) {
-        const store = await mongoose.model("Store").findById(v);
-        return store && store.approved && store.status === "active";
-      },
-      message: "Store must be approved and active"
-    }
+
   },
   requiresPrescription: {
     type: Boolean,
@@ -54,21 +46,21 @@ const orderItemSchema = new mongoose.Schema({
   prescriptionApprovedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    validate: {
-      validator: async function(v) {
-        if (!this.requiresPrescription || !v) return true;
-        const user = await mongoose.model("User").findById(v);
-        return user && user.role === "doctor";
-      },
-      message: "Prescription must be approved by a doctor"
-    }
+    // validate: {
+    //   validator: async function (v) {
+    //     if (!this.requiresPrescription || !v) return true;
+    //     const user = await mongoose.model("User").findById(v);
+    //     return user && user.role === "doctor";
+    //   },
+    //   message: "Prescription must be approved by a doctor"
+    // }
   }
 }, { _id: false });
 
 const paymentSchema = new mongoose.Schema({
   method: {
     type: String,
-    enum: ["credit_card", "debit_card", "net_banking", "wallet", "cod", "upi"],
+    enum: ["credit_card", "debit_card", "cash on delivery", "net_banking", "wallet", "cod", "upi"],
     required: [true, "Payment method is required"]
   },
   transactionId: {
@@ -94,28 +86,28 @@ const paymentSchema = new mongoose.Schema({
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
-  orderId: {
-    type: String,
-    unique: true,
-    required: true,
-    index: true
-  },
+  // orderId: {
+  //   type: String,
+  //   unique: true,
+  //   required: true,
+  //   index: true
+  // },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: [true, "User reference is required"],
-    validate: {
-      validator: async function(v) {
-        const user = await mongoose.model("User").findById(v);
-        return !!user && user.verified;
-      },
-      message: "User must be verified and valid"
-    }
+    // validate: {
+    //   validator: async function (v) {
+    //     const user = await mongoose.model("User").findById(v);
+    //     return !!user && user.verified;
+    //   },
+    //   message: "User must be verified and valid"
+    // }
   },
   items: {
     type: [orderItemSchema],
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return v && v.length > 0;
       },
       message: "Order must contain at least one item"
@@ -152,21 +144,18 @@ const orderSchema = new mongoose.Schema({
   },
   orderStatus: {
     type: String,
-    enum: {
-      values: [
-        "pending", 
-        "confirmed", 
-        "processing", 
-        "ready_for_shipment",
-        "shipped", 
-        "out_for_delivery", 
-        "delivered", 
-        "cancelled", 
-        "returned",
-        "refunded"
-      ],
-      message: "Invalid order status"
-    },
+    enum: [
+      "pending",
+      "confirmed",
+      "processing",
+      "ready_for_shipment",
+      "shipped",
+      "out_for_delivery",
+      "delivered",
+      "cancelled",
+      "returned",
+      "refunded"
+    ],
     default: "pending"
   },
   statusHistory: [{
@@ -192,7 +181,7 @@ const orderSchema = new mongoose.Schema({
     ref: "Address",
     required: [true, "Shipping address is required"],
     validate: {
-      validator: async function(v) {
+      validator: async function (v) {
         const address = await mongoose.model("Address").findById(v);
         return address && address.user.equals(this.user);
       },
@@ -203,7 +192,7 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Address",
     validate: {
-      validator: async function(v) {
+      validator: async function (v) {
         if (!v) return true;
         const address = await mongoose.model("Address").findById(v);
         return address && address.user.equals(this.user);
@@ -214,7 +203,7 @@ const orderSchema = new mongoose.Schema({
   prescription: {
     type: String,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         if (!v) return true;
         return validator.isURL(v, {
           protocols: ["http", "https"],
@@ -236,7 +225,7 @@ const orderSchema = new mongoose.Schema({
     trackingUrl: {
       type: String,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           if (!v) return true;
           return validator.isURL(v, {
             protocols: ["http", "https"],
@@ -265,29 +254,24 @@ const orderSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes for better performance
+// Indexes
 orderSchema.index({ user: 1 });
-orderSchema.index({ "orderStatus": 1 });
+orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ "payment.status": 1 });
-orderSchema.index({ "items.store": 1 });
+// orderSchema.index({ "items.store": 1 });
 
-// Pre-save hook to generate order ID and validate amounts
-orderSchema.pre("save", async function(next) {
+// Pre-save hook
+orderSchema.pre("save", async function (next) {
   if (this.isNew) {
-    // Generate custom order ID (format: ORD-YYYYMMDD-XXXXX)
     const count = await mongoose.model("Order").countDocuments();
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     this.orderId = `ORD-${dateStr}-${(count + 1).toString().padStart(5, '0')}`;
-    
-    // Calculate final amount if not provided
+
     if (!this.finalAmount) {
       this.finalAmount = this.totalAmount - this.discountAmount + this.taxAmount + this.shippingAmount;
     }
-  }
 
-  // Add initial status to history
-  if (this.isNew) {
     this.statusHistory = [{
       status: this.orderStatus,
       changedAt: new Date(),
@@ -297,8 +281,8 @@ orderSchema.pre("save", async function(next) {
   next();
 });
 
-// Pre-save hook to update status history when status changes
-orderSchema.pre("save", function(next) {
+// Status update history
+orderSchema.pre("save", function (next) {
   if (this.isModified("orderStatus")) {
     this.statusHistory.push({
       status: this.orderStatus,
@@ -309,8 +293,8 @@ orderSchema.pre("save", function(next) {
   next();
 });
 
-// Virtual for order summary
-orderSchema.virtual("summary").get(function() {
+// Virtuals
+orderSchema.virtual("summary").get(function () {
   return {
     items: this.items.length,
     total: this.finalAmount,
@@ -319,35 +303,38 @@ orderSchema.virtual("summary").get(function() {
   };
 });
 
-// Virtual for prescription required status
-orderSchema.virtual("requiresPrescription").get(function() {
+orderSchema.virtual("requiresPrescription").get(function () {
   return this.items.some(item => item.requiresPrescription);
 });
 
-// Static method to get orders by status
-orderSchema.statics.findByStatus = function(status) {
+// Static methods
+orderSchema.statics.findByStatus = function (status) {
   return this.find({ orderStatus: status }).sort({ createdAt: -1 });
 };
 
-// Static method to get user's orders
-orderSchema.statics.findByUser = function(userId, status) {
+orderSchema.statics.findByUser = function (userId, status) {
   const query = { user: userId };
   if (status) query.orderStatus = status;
   return this.find(query).sort({ createdAt: -1 });
 };
 
-// Instance method to check if order can be cancelled
-orderSchema.methods.canCancel = function() {
+// Instance methods
+orderSchema.methods.canCancel = function () {
   const cancellableStatuses = ["pending", "confirmed", "processing"];
   return cancellableStatuses.includes(this.orderStatus);
 };
 
-// Instance method to check if order can be returned
-orderSchema.methods.canReturn = function() {
+orderSchema.methods.canReturn = function () {
   const returnableStatuses = ["delivered"];
-  const returnWindow = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-  return returnableStatuses.includes(this.orderStatus) && 
-         new Date() - new Date(this.updatedAt) <= returnWindow;
+  const returnWindow = 7 * 24 * 60 * 60 * 1000;
+  return returnableStatuses.includes(this.orderStatus) &&
+    new Date() - new Date(this.updatedAt) <= returnWindow;
 };
+
+// Final amount check
+orderSchema.path("finalAmount").validate(function (value) {
+  const calculatedAmount = this.totalAmount - this.discountAmount + this.taxAmount + this.shippingAmount;
+  return Math.abs(value - calculatedAmount) < 0.01;
+}, "Final amount must match calculated amount (total - discount + tax + shipping)");
 
 export const Order = mongoose.model("Order", orderSchema);

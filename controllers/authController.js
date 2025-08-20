@@ -3,6 +3,9 @@ import { User } from "../models/User.js";
 import { validationResult } from "express-validator";
 import { logger } from "../utils/logger.js";
 import "dotenv/config"
+import path from "path";
+import fs from "fs";
+import multer from "multer";
 
 // Constants
 const TOKEN_EXPIRY = "7d";
@@ -17,7 +20,7 @@ const LOCK_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
 const generateToken = (user) => {
   return jwt.sign(
     {
-      id: user._id,
+      id: user.id,
       role: user.role,
       // Add more claims as needed but avoid sensitive data
       iss: "your-api-domain.com",
@@ -58,13 +61,13 @@ export const registerUser = async (req, res) => {
 
     // 2. Extract fields with role-based validation
     const { role = "user" } = req.body;
-    
+
     // Define role-specific allowed fields
     const roleFieldMap = {
       user: ["name", "email", "password", "phone", "address"],
       admin: ["name", "email", "password", "phone", "department"],
       doctor: [
-        "name", "email", "password", "phone", 
+        "name", "email", "password", "phone",
         "specialization", "qualifications", "licenseNumber",
         "hospital", "consultationFee", "availability"
       ]
@@ -72,7 +75,7 @@ export const registerUser = async (req, res) => {
 
     // Get allowed fields for the role or default to user
     const allowedFields = roleFieldMap[role] || roleFieldMap.user;
-    
+
     // Create filtered payload with only allowed fields
     const payload = {};
     for (const field of allowedFields) {
@@ -87,7 +90,7 @@ export const registerUser = async (req, res) => {
     // 3. Validate required fields
     const requiredFields = ["name", "email", "password"];
     const missingFields = requiredFields.filter(field => !payload[field]);
-    
+
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
@@ -100,10 +103,10 @@ export const registerUser = async (req, res) => {
     }
 
     // 4. Check if user exists (case-insensitive search)
-    const existingUser = await User.findOne({ 
-      email: { $regex: new RegExp(`^${payload.email}$`, 'i') } 
+    const existingUser = await User.findOne({
+      email: { $regex: new RegExp(`^${payload.email}$`, 'i') }
     });
-    
+
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -121,7 +124,7 @@ export const registerUser = async (req, res) => {
 
     // 7. Prepare response data (excluding sensitive fields)
     const userData = {
-      id: newUser._id,
+      id: newUser.id,
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,
@@ -268,7 +271,7 @@ export const loginUser = async (req, res) => {
 
     // 7. Prepare response data
     const userData = {
-      id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
@@ -321,5 +324,167 @@ export const logoutUser = async (req, res) => {
       message: "Logout failed due to server error.",
       error: error.message
     });
+  }
+};
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = "uploads/profile";
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    cb(null, `user-${req.user.id}-${Date.now()}${ext}`);
+  }
+});
+
+// File filter for image only
+function fileFilter(req, file, cb) {
+  if (!file.mimetype.startsWith("image/")) {
+    return cb(new Error("Only image files are allowed"), false);
+  }
+  cb(null, true);
+}
+
+export const upload = multer({ storage, fileFilter });
+
+// 📌 Upload profile picture
+export const uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Save file path in user model
+    // if(!user.profilePicture){
+    //   user.profilePicture
+    // }
+    user.profilePicture = `/uploads/profile/${req.file.filename}`;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully",
+      profilePicture: user.profilePicture
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 📌 Fetch profile picture
+export const getProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    console.log(user)
+    if (!user || !user.profilePicture) {
+      return res.status(404).json({ success: false, message: "Profile picture not found" });
+    }
+
+    // const filePath = path.join(process.cwd(), user.profilePicture);
+    // res.sendFile(filePath);
+    return res.json({
+      message: "user details fetched successfully",
+      user
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const deleteProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (!user.profilePicture) {
+      return res.status(400).json({ success: false, message: "No profile picture to delete" });
+    }
+
+    // Get file path
+    const filePath = path.join(process.cwd(), "uploads", "profile", path.basename(user.profilePicture));
+
+    // Delete file from local system if exists
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Remove profile picture from DB
+    user.profilePicture = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture deleted successfully"
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+
+// 📌 Update User Profile (partial update)
+export const updateUserProfile = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      specialization,
+      qualifications
+    } = req.body || {};
+
+    // User find karo
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // ✅ Sirf wahi fields update hongi jo request me aayi hain
+    if (name !== undefined) user.name = name;
+    if (email !== undefined) user.email = email;
+    if (phone !== undefined) user.phone = phone;
+    if (specialization !== undefined) user.specialization = specialization;
+    if (qualifications !== undefined) user.qualifications = qualifications;
+
+    // Profile picture agar file upload ke through aayi hai
+    if (req.file) {
+      user.profilePicture = `/uploads/profile/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        specialization: user.specialization,
+        qualifications: user.qualifications,
+        role: user.role,
+        profilePicture: user.profilePicture || null,
+        verified: user.verified,
+        store: user.store || null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

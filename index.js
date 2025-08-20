@@ -11,6 +11,10 @@ import { parentCategory } from "./routes/parentCategoryRoutes.js";
 import { orderRouter } from "./routes/orderRoutes.js";
 import { medicalUploadRouter } from "./routes/medicalUploadRoutes.js";
 // import { paymentRouter } from "./routes/paymentRoutes.js";
+import docProductRoute from './routes/docProductRoute.js';
+import { createUploadsDir } from "./utils/fileUtils.js";
+import { cartRouter } from "./routes/cartRoute.js";
+import { notificationRouter } from "./routes/notificationRoutes.js";
 
 const app = express();
 
@@ -29,8 +33,14 @@ app.use("/api/category", categoryRoute);
 app.use("/api/parent-category", parentCategory);
 app.use("/api/order", orderRouter);
 app.use("/api/upload-medical-report", medicalUploadRouter);
+app.use("/api/cart", cartRouter)
 // app.use("/api/payment", paymentRouter);
+// Use product routes
+app.use('/api/products', docProductRoute);
+app.use('/api/notifications', notificationRouter);
 
+// Create uploads directory
+createUploadsDir();
 // health check (optional)
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

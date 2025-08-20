@@ -1,10 +1,9 @@
 // controllers/medicalUploadController.js
 import { MedicalUpload } from "../models/MedicalUpload.js";
 import { validationResult } from "express-validator";
-import {logger} from "../utils/logger.js";
+import { logger } from "../utils/logger.js";
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
-
 // configure cloudinary from env
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

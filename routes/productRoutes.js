@@ -57,7 +57,7 @@ router.get("/:id", getProductById);
 router.post(
   "/",
   protect,
-  upload.array("images", 5), // Accept up to 5 images
+  upload.array("images", 10), // Accept up to 5 images
   createProduct
 );
 
@@ -69,7 +69,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  upload.array("images", 5), // Accept up to 5 images
+  upload.array("images", 10), // Accept up to 5 images
   updateProduct
 );
 
@@ -87,4 +87,4 @@ router.delete("/:id", protect, deleteProduct);
  */
 router.patch("/:id/adjust-stock", protect, adjustStock);
 
-export const productRouter= router;
+export const productRouter = router;

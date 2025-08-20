@@ -39,32 +39,54 @@ const productSchema = new mongoose.Schema({
   },
   images: [{
     type: String,
-    validate: {
-      validator: function (v) {
-        return validator.isURL(v, {
-          protocols: ["http", "https"],
-          require_protocol: true
-        });
-      },
-      message: "Invalid image URL"
-    }
+    // validate: {
+    //   validator: function (v) {
+    //     return validator.isURL(v, {
+    //       protocols: ["http", "https"],
+    //       require_protocol: true
+    //     });
+    //   },
+    //   message: "Invalid image URL"
+    // }
   }],
-  store: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Store",
-    required: [true, "Store reference is required"],
-    validate: {
-      validator: async function (v) {
-        const store = await mongoose.model("Store").findById(v);
-        return store && store.approved && store.status === "active";
-      },
-      message: "Store must be an approved and active store"
-    }
-  },
+  // store: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Store",
+  //   // required: [true, "Store reference is required"],
+  //   validate: {
+  //     validator: async function (v) {
+  //       const store = await mongoose.model("Store").findById(v);
+  //       return store && store.approved && store.status === "active";
+  //     },
+  //     message: "Store must be an approved and active store"
+  //   }
+  // },
+  medicineCategory: {
+    type: String,
+    enum: {
+      values: [
+        "Tablet",
+        "Capsule",
+        "Syrup",
+        "Injection",
+        "Ointment",
+        "Drops",
+        "Powder",
+        "Inhaler",
+        "Vaccine",
+        "Supplement"
+      ],
+      message: "Invalid medicine category. Allowed categories are: Tablet, Capsule, Syrup, Injection, Ointment, Drops, Powder, Inhaler, Vaccine, Supplement"
+    },
+    trim: true,
+    lowercase: true,
+    index: true
+  }
+  ,
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
-    required: [true, "Category reference is required"],
+    // required: [true, "Category reference is required"],
     validate: {
       validator: async function (v) {
         const category = await mongoose.model("Category").findById(v);
@@ -199,7 +221,7 @@ productSchema.virtual("discountedPrice").get(function () {
 // Virtual for availability status
 productSchema.virtual("availability").get(function () {
   if (this.quantity <= 0) return "out_of_stock";
-  if (this.status !== "active") return this.status;
+  // if (this.status !== "active") return this.status;
   return "in_stock";
 });
 
@@ -227,7 +249,7 @@ productSchema.pre("save", async function (next) {
 productSchema.statics.findByPriceRange = function (min, max) {
   return this.find({
     price: { $gte: min, $lte: max },
-    status: "active"
+    // status: "active"
   });
 };
 
@@ -235,7 +257,7 @@ productSchema.statics.findByPriceRange = function (min, max) {
 productSchema.statics.findLowStock = function (threshold = 10) {
   return this.find({
     quantity: { $lte: threshold },
-    status: "active"
+    // status: "active"
   });
 };
 
