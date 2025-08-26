@@ -109,7 +109,7 @@ export const createStore = async (req, res, next) => {
     }
 
     // Check authorization - only admin or doctor can create stores
-    if (!['admin', 'doctor'].includes(user.role)) {
+    if (!['admin', 'doctor','store'].includes(user.role)) {
       return res.status(403).json({
         success: false,
         message: "Only administrators and doctors can create stores"
@@ -144,7 +144,7 @@ export const createStore = async (req, res, next) => {
     const store = await Store.create(storeData);
 
     // Update user's store reference if needed
-    if (user.role === 'doctor') {
+    if (user.role === 'store'||user.role === 'doctor') {
       await User.findByIdAndUpdate(ownerId, { store: store._id });
     }
 

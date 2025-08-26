@@ -87,18 +87,18 @@ const notificationSchema = new mongoose.Schema(
     actionUrl: {
       type: String,
       trim: true,
-      validate: {
-        validator: function(value) {
-          // Validate URL format if provided
-          return !value || validator.isURL(value, {
-            protocols: ["http", "https"],
-            require_protocol: true,
-            require_valid_protocol: true,
-            allow_underscores: true
-          });
-        },
-        message: "Invalid URL format for action URL"
-      }
+      // validate: {
+      //   validator: function(value) {
+      //     // Validate URL format if provided
+      //     return !value || validator.isURL(value, {
+      //       protocols: ["http", "https"],
+      //       require_protocol: true,
+      //       require_valid_protocol: true,
+      //       allow_underscores: true
+      //     });
+      //   },
+      //   message: "Invalid URL format for action URL"
+      // }
     },
     metadata: {
       type: Map,

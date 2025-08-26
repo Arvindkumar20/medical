@@ -15,6 +15,8 @@ import docProductRoute from './routes/docProductRoute.js';
 import { createUploadsDir } from "./utils/fileUtils.js";
 import { cartRouter } from "./routes/cartRoute.js";
 import { notificationRouter } from "./routes/notificationRoutes.js";
+import { fcmTokenRouter } from "./routes/notificationToken.js";
+import cors from "cors";
 
 const app = express();
 
@@ -23,6 +25,7 @@ connectDB();
 
 // body parsers
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
@@ -34,19 +37,19 @@ app.use("/api/parent-category", parentCategory);
 app.use("/api/order", orderRouter);
 app.use("/api/upload-medical-report", medicalUploadRouter);
 app.use("/api/cart", cartRouter)
-// app.use("/api/payment", paymentRouter);
-// Use product routes
+
 app.use('/api/products', docProductRoute);
 app.use('/api/notifications', notificationRouter);
+app.use("/api/fcm-token",fcmTokenRouter);
 
-// Create uploads directory
+// Create uploads directory;
 createUploadsDir();
-// health check (optional)
+// health check (optional);
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// error handler (must be after routes)
+// error handler (must be after routes);
 app.use(errorHandler);
 
 // start

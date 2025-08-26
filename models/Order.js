@@ -86,12 +86,12 @@ const paymentSchema = new mongoose.Schema({
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
-  // orderId: {
-  //   type: String,
-  //   unique: true,
-  //   required: true,
-  //   index: true
-  // },
+  orderId: {
+    type: String,
+    unique: true,
+    // required: true,
+    index: true
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

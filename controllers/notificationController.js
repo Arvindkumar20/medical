@@ -46,7 +46,7 @@ export const getNotifications = [
 
       // Get notifications
       const [notifications, total] = await Promise.all([
-        Notification.find(filter)
+        Notification.find({})
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limitNum)
@@ -55,7 +55,7 @@ export const getNotifications = [
           .populate("productId", "name images"),
         Notification.countDocuments(filter)
       ]);
-
+      console.log(notifications);
       res.json({
         success: true,
         data: notifications,
@@ -84,7 +84,7 @@ export const getNotification = [
       const notification = await Notification.findById(req.params.id)
         .populate("userId", "name email")
         .populate("storeId", "name")
-        .populate("productId", "name images");
+        .populate("productId", "name images price variants");
 
       if (!notification) {
         return res.status(404).json({
@@ -163,7 +163,7 @@ export const createNotification = [
       // Populate references for response
       await notification.populate("userId", "name email");
       await notification.populate("storeId", "name");
-      await notification.populate("productId", "name images");
+      await notification.populate("productId", "name images price variants");
 
       logger.info(`Notification created: ${notification._id}`, {
         notificationId: notification._id,
@@ -225,7 +225,7 @@ export const updateNotification = [
       )
         .populate("id", "name email")
         .populate("storeId", "name")
-        .populate("productId", "name images");
+        .populate("productId", "name images price variants");
 
       logger.info(`Notification updated: ${req.params.id}`, {
         notificationId: req.params.id,
@@ -307,7 +307,7 @@ export const markAsRead = [
       }
 
       // Check permissions
-      if (!req.user.isAdmin && notification.id.toString() !== req.user.id) {
+      if (!req.user.id && notification.id.toString() !== req.user.id) {
         return res.status(403).json({
           success: false,
           message: "Access denied"
@@ -318,7 +318,7 @@ export const markAsRead = [
       const updatedNotification = await notification.markAsRead();
       await updatedNotification.populate("userId", "name email");
       await updatedNotification.populate("storeId", "name");
-      await updatedNotification.populate("productId", "name images");
+      await updatedNotification.populate("productId", "name images price variants");
 
       logger.info(`Notification marked as read: ${req.params.id}`, {
         notificationId: req.params.id,
@@ -380,7 +380,7 @@ export const getUnreadNotifications = [
       const limit = parseInt(req.query.limit) || 20;
 
       // Check permissions
-      if (!req.user.isAdmin && id !== req.user.id) {
+      if (!req.user.id && id !== req.user.id) {
         return res.status(403).json({
           success: false,
           message: "Access denied"

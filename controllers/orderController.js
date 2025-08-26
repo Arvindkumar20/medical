@@ -4,6 +4,8 @@ import { validationResult } from "express-validator";
 import { logger } from "../utils/logger.js";
 // import { createAddress } from "../utils/addressHelper.js";
 import { createAddress } from "../utils/addressHelper.js"
+// import { sendNotification } from "../utils/sendNotification.js";
+import { handleStoreNotification } from "../utils/notificationService.js";
 
 // Build filter from query params
 const buildFilter = (query) => {
@@ -86,34 +88,99 @@ export const getOrderById = async (req, res, next) => {
 };
 
 // POST /api/orders
+// export const createOrder = async (req, res, next) => {
+//   try {
+//     // validations should be in route
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       logger.warn("Validation errors in createOrder", { errors: errors.array() });
+//       return res.status(400).json({ success: false, errors: errors.array() });
+//     }
+
+
+//     // attach authenticated user if available
+//     if (!req.body.user && req.user) {
+//       req.body.user = req.user.id;
+//     }
+//     const { shippingAddress, billingAddress } = req.body;
+//     let savedAddresses;
+//     try {
+
+//       const addresses = [shippingAddress, billingAddress];
+
+
+//       savedAddresses = await Promise.all(
+//         addresses.map(addr =>
+//           addr ? createAddress({ ...addr, user: req.user.id }) : null
+
+//         )
+//       );
+
+//       if (!savedAddresses || savedAddresses.includes(null)) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Some addresses could not be saved",
+//         });
+//       }
+//     } catch (error) {
+//       return res.status(500).json({
+//         success: false,
+//         message: "Address saving problem",
+//         error: error.message
+//       });
+//     }
+//     console.log(savedAddresses)
+//     const {
+//       totalAmount,
+//       discountAmount = 0,
+//       taxAmount = 0,
+//       shippingAmount = 0,
+//       finalAmount,
+//     } = req.body;
+
+//     const computedFinal = totalAmount - discountAmount + taxAmount + shippingAmount;
+//     if (Math.abs(computedFinal - finalAmount) > 0.01) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Final amount mismatch",
+//         detail: { computedFinal, provided: finalAmount }
+//       });
+//     }
+
+//     const order = await Order.create({ ...req.body, shippingAddress: savedAddresses[0].data.id, billingAddress: savedAddresses[0].data.id });
+
+//     res.status(201).json({ success: true, data: order });
+//   } catch (err) {
+//     logger.error("Error in createOrder:", { body: req.body, message: err.message, stack: err.stack });
+//     next(err);
+//   }
+// };
 export const createOrder = async (req, res, next) => {
   try {
-    // validations should be in route
+    // Input validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       logger.warn("Validation errors in createOrder", { errors: errors.array() });
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-
-    // attach authenticated user if available
+    // Attach authenticated user if available
     if (!req.body.user && req.user) {
       req.body.user = req.user.id;
     }
+
+    // Process addresses
     const { shippingAddress, billingAddress } = req.body;
     let savedAddresses;
+
     try {
-
       const addresses = [shippingAddress, billingAddress];
-
-
       savedAddresses = await Promise.all(
         addresses.map(addr =>
           addr ? createAddress({ ...addr, user: req.user.id }) : null
-
         )
       );
-
+      console.log(savedAddresses)
       if (!savedAddresses || savedAddresses.includes(null)) {
         return res.status(400).json({
           success: false,
@@ -127,7 +194,8 @@ export const createOrder = async (req, res, next) => {
         error: error.message
       });
     }
-    console.log(savedAddresses)
+
+    // Validate amounts
     const {
       totalAmount,
       discountAmount = 0,
@@ -145,13 +213,75 @@ export const createOrder = async (req, res, next) => {
       });
     }
 
-    const order = await Order.create({ ...req.body, shippingAddress: savedAddresses[0].data.id, billingAddress: savedAddresses[0].data.id });
-    res.status(201).json({ success: true, data: order });
+    // Create order
+    const order = await Order.create({
+      ...req.body,
+      shippingAddress: savedAddresses[0].data._id,
+      billingAddress: savedAddresses[0].data._id,
+      status: 'pending' // Set initial status
+    });
+
+    // Function to handle store notification process
+
+
+    // Start the store notification process (non-blocking)
+    try {
+      const notificationResponse = await handleStoreNotification(order._id, shippingAddress, order?.summary?.items, order.summary.total)
+      console.log(notificationResponse)
+
+    } catch (error) {
+
+      return res.json("Error in store notification background process", {
+        orderId: order._id,
+        error: error.message
+      });
+    }
+    const newOrder = await Order.findById(order._id);
+    // Respond immediately while store notification happens in background
+    if (newOrder.orderStatus === "confirmed") {
+      res.status(201).json({
+        success: true,
+        data: order,
+        message: "Order created. Store confirmation in progress."
+      });
+    }
+    else{
+      res.status(200).json({
+        success: false,
+        data: newOrder,
+        message: "Order cancelled. Store not confirmed order."
+      });
+    }
+
   } catch (err) {
-    logger.error("Error in createOrder:", { body: req.body, message: err.message, stack: err.stack });
+    logger.error("Error in createOrder:", {
+      body: req.body,
+      message: err.message,
+      stack: err.stack
+    });
     next(err);
   }
 };
+
+
+// // Helper functions (these would be implemented elsewhere)
+// const fetchNearestStore = async (orderId) => {
+//   // Implementation to find the nearest store
+//   // This would use geolocation data from the order and stores
+//   return Store.findOne({ /* query to find nearest store */ });
+// };
+
+// const sendNotificationToStore = async (storeId, orderId) => {
+//   // Implementation to send notification to store
+//   // This could be via email, SMS, or push notification
+//   // Returns a promise that resolves to { confirmed: boolean }
+//   return NotificationService.sendToStore(storeId, orderId);
+// };
+
+// const saveNotification = async (notificationData) => {
+//   // Implementation to save notification to database
+//   return Notification.create(notificationData);
+// };
 
 // PATCH /api/orders/:id/status
 export const updateOrderStatus = async (req, res, next) => {
@@ -160,7 +290,6 @@ export const updateOrderStatus = async (req, res, next) => {
     if (!status) {
       return res.status(400).json({ success: false, message: "Status is required" });
     }
-
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
@@ -179,7 +308,6 @@ export const updateOrderStatus = async (req, res, next) => {
         });
       }
     }
-
     await order.save();
     res.json({ success: true, data: order });
   } catch (err) {
@@ -247,7 +375,7 @@ export const updatePayment = async (req, res, next) => {
     if (!payment) {
       return res.status(400).json({ success: false, message: "Payment payload required" });
     }
-    
+
 
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: "Order not found" });

@@ -56,24 +56,24 @@ const addressSchema = new mongoose.Schema({
     // required: [true, 'Country is required'],
     trim: true,
     maxlength: [100, 'Country name cannot exceed 100 characters'],
-    validate: {
-      validator: function (v) {
-        return validator.isISO31661Alpha2(v) || validator.isISO31661Alpha3(v);
-      },
-      message: 'Please provide a valid ISO country code (2 or 3 letters)'
-    }
+    // validate: {
+    //   validator: function (v) {
+    //     return validator.isISO31661Alpha2(v) || validator.isISO31661Alpha3(v);
+    //   },
+    //   message: 'Please provide a valid ISO country code (2 or 3 letters)'
+    // }
   },
   postalCode: {
     type: String,
     // required: [true, 'Postal code is required'],
     trim: true,
-    validate: {
-      validator: function (v) {
-        // Basic validation for international postal codes
-        return /^[a-zA-Z0-9\- ]{3,10}$/.test(v);
-      },
-      message: 'Invalid postal code format'
-    }
+    // validate: {
+    //   validator: function (v) {
+    //     // Basic validation for international postal codes
+    //     return /^[a-zA-Z0-9\- ]{3,10}$/.test(v);
+    //   },
+    //   message: 'Invalid postal code format'
+    // }
   },
 
   coordinates: {

@@ -151,7 +151,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: {
-      values: ["customer", "doctor", "admin"],
+      values: ["customer", "doctor", "admin","store"],
       message: "Role must be either customer, doctor, or admin"
     },
     default: "customer"
@@ -184,7 +184,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     
-  }
+  },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
