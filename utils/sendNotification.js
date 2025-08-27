@@ -1,10 +1,10 @@
 // utils/sendNotification.js
-import admin from "./firebase.js"; // यह firebase-admin config वाली फाइल है
+import admin from "./firebase.js"; 
 import { Store } from "../models/Store.js";
 import { Product } from "../models/Product.js";
 import { Order } from "../models/Order.js";
 import { Address } from "../models/Address.js";
-import { getFcmTokenByUserId } from "./getFcmToken.js"; // 👉 यह function तुझे बनाना होगा (DB से token निकालने के लिए)
+import { getFcmTokenByUserId } from "./getFcmToken.js"; 
 
 // 🚀 Send Notification Function
 export const sendNotification = async ({ shippingAddress, storeId, productId, price, quantity }) => {
