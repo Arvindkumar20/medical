@@ -55,7 +55,7 @@ router.post(
 
 // Update status
 router.patch(
-  "/:id/status",
+  "/:id/confirm",
   protect,
   [
     param("id").isMongoId(),

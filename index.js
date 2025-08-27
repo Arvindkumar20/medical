@@ -17,6 +17,7 @@ import { cartRouter } from "./routes/cartRoute.js";
 import { notificationRouter } from "./routes/notificationRoutes.js";
 import { fcmTokenRouter } from "./routes/notificationToken.js";
 import cors from "cors";
+import { doctorRouter } from "./routes/doctorRoutes.js";
 
 const app = express();
 
@@ -40,7 +41,9 @@ app.use("/api/cart", cartRouter)
 
 app.use('/api/products', docProductRoute);
 app.use('/api/notifications', notificationRouter);
-app.use("/api/fcm-token",fcmTokenRouter);
+app.use("/api/fcm-token", fcmTokenRouter);
+app.use('/api/doctors', doctorRouter);
+app.use('/api/appointment', doctorRouter);
 
 // Create uploads directory;
 createUploadsDir();

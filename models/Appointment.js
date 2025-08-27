@@ -1,186 +1,235 @@
-// models/Appointment.js
-import mongoose from "mongoose";
-import validator from "validator";
-import { isAfter, addMinutes, isBefore } from "date-fns";
+import mongoose from 'mongoose';
 
-const appointmentSchema = new mongoose.Schema({
-  patient: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "User",
-    required: [true, "Patient ID is required"],
-    validate: {
-      validator: async function(value) {
-        const user = await mongoose.model("User").findById(value);
-        return user && user.role === "patient";
-      },
-      message: "Patient ID must reference a valid patient user"
+const appointmentSchema = new mongoose.Schema(
+  {
+    doctor: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'DoctorProfile', 
+      required: true,
+      index: true 
+    },
+    patient: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'User', 
+      required: true,
+      index: true 
+    },
+    appointmentDate: { 
+      type: Date, 
+      required: true,
+      validate: {
+        validator: function(date) {
+          return date > new Date();
+        },
+        message: 'Appointment date must be in the future'
+      }
+    },
+    timeSlot: {
+      start: { type: Date, required: true },
+      end: { type: Date, required: true },
+    },
+    duration: { 
+      type: Number, 
+      required: true,
+      min: 5,
+      max: 240, // 4 hours max
+      validate: {
+        validator: Number.isInteger,
+        message: 'Duration must be an integer'
+      }
+    },
+    timeLabel: { 
+      type: String,
+      required: true 
+    }, // e.g., '10:15-10:30'
+    consultationType: { 
+      type: String, 
+      enum: ['online', 'in_clinic', 'home_visit'], 
+      default: 'online',
+      required: true 
+    },
+    status: { 
+      type: String, 
+      enum: ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'], 
+      default: 'pending',
+      index: true 
+    },
+    paymentStatus: { 
+      type: String, 
+      enum: ['unpaid', 'pending', 'paid', 'refunded', 'partially_refunded', 'failed'], 
+      default: 'unpaid',
+      index: true 
+    },
+    reason: { 
+      type: String,
+      maxLength: 500 
+    }, // patient reason for visit
+    symptoms: [{ type: String }], // structured symptom tracking
+    diagnosis: { type: String }, // doctor's diagnosis
+    prescription: [{ // structured prescription data
+      medication: { type: String, required: true },
+      dosage: { type: String, required: true },
+      frequency: { type: String, required: true },
+      duration: { type: String, required: true } // e.g., "7 days"
+    }],
+    notes: { 
+      type: String,
+      maxLength: 1000 
+    }, // doctor notes
+    followUpDate: { type: Date }, // if a follow-up is needed
+    cancellationReason: { type: String }, // if appointment is cancelled
+    cancelledBy: { // who cancelled the appointment
+      type: String,
+      enum: ['patient', 'doctor', 'system', 'admin']
+    },
+    cancellationTime: { type: Date }, // when it was cancelled
+    // Payment information
+    amount: { 
+      type: Number, 
+      required: true,
+      min: 0 
+    },
+    currency: {
+      type: String,
+      default: 'USD',
+      enum: ['USD', 'EUR', 'GBP', 'INR'] // Add more as needed
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer', 'cash', null],
+      default: null
+    },
+    paymentId: { type: String }, // reference to payment gateway
+    refundAmount: { type: Number, default: 0 },
+    // For video consultations
+    meetingUrl: { type: String },
+    meetingId: { type: String },
+    meetingPassword: { type: String },
+    // For reminders and notifications
+    remindersSent: {
+      sms: { type: Boolean, default: false },
+      email: { type: Boolean, default: false },
+      push: { type: Boolean, default: false }
+    },
+    lastReminderSent: { type: Date },
+    // For analytics
+    bookingSource: {
+      type: String,
+      enum: ['web', 'mobile_app', 'phone', 'admin', 'partner'],
+      default: 'web'
+    },
+    // Soft delete flag
+    isActive: {
+      type: Boolean,
+      default: true,
+      select: false
     }
   },
-  doctor: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "User",
-    required: [true, "Doctor ID is required"],
-    validate: {
-      validator: async function(value) {
-        const user = await mongoose.model("User").findById(value);
-        return user && user.role === "doctor";
-      },
-      message: "Doctor ID must reference a valid doctor user"
-    }
-  },
-  symptoms: {
-    type: String,
-    required: [true, "Symptoms description is required"],
-    minlength: [10, "Symptoms description must be at least 10 characters"],
-    maxlength: [500, "Symptoms description cannot exceed 500 characters"],
-    trim: true
-  },
-  status: { 
-    type: String, 
-    enum: ["pending", "confirmed", "cancelled", "completed"],
-    default: "pending" 
-  },
-  date: {
-    type: Date,
-    required: [true, "Appointment date is required"],
-    validate: {
-      validator: function(value) {
-        const now = new Date();
-        const minDate = addMinutes(now, 24 * 60); // 24 hours ahead
-        return isAfter(value, minDate);
-      },
-      message: "Appointment must be scheduled at least 24 hours in advance"
-    }
-  },
-  time: {
-    type: String,
-    required: [true, "Appointment time is required"],
-    validate: {
-      validator: (value) => /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value),
-      message: "Time must be in HH:MM format (24-hour clock)"
-    }
-  },
-  duration: {
-    type: Number,
-    default: 30,
-    min: [15, "Minimum appointment duration is 15 minutes"],
-    max: [120, "Maximum appointment duration is 120 minutes"]
-  },
-  prescriptionGiven: { 
-    type: Boolean, 
-    default: false,
-    validate: {
-      validator: function(value) {
-        if (value && this.status !== "completed") return false;
-        return true;
-      },
-      message: "Prescription can only be given for completed appointments"
-    }
-  },
-  notes: {
-    type: String,
-    maxlength: [1000, "Notes cannot exceed 1000 characters"],
-    trim: true
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
-}, { 
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+);
+
+// Virtual for checking if appointment is upcoming
+appointmentSchema.virtual('isUpcoming').get(function() {
+  return this.timeSlot.end > new Date() && this.status === 'confirmed';
 });
 
-// Virtual for endTime
-appointmentSchema.virtual("endTime").get(function() {
-  if (!this.time || !this.duration || !this.date) return null;
-  const [hours, minutes] = this.time.split(":").map(Number);
-  const start = new Date(this.date);
-  start.setHours(hours, minutes, 0, 0);
-  return addMinutes(start, this.duration);
+// Virtual for checking if appointment can be cancelled
+appointmentSchema.virtual('canBeCancelled').get(function() {
+  const hoursUntilAppointment = (this.timeSlot.start - new Date()) / (1000 * 60 * 60);
+  return hoursUntilAppointment > 24 && ['pending', 'confirmed'].includes(this.status);
 });
 
-// Prevent modifications if cancelled/completed (except marking completed after time)
-appointmentSchema.pre("save", function(next) {
-  if (!this.isNew && this.isModified() && ["cancelled"].includes(this.status)) {
-    // cannot modify into cancelled if in past? handled elsewhere
+// Compound indexes for common query patterns
+appointmentSchema.index({ doctor: 1, appointmentDate: 1 });
+appointmentSchema.index({ patient: 1, appointmentDate: 1 });
+appointmentSchema.index({ status: 1, appointmentDate: 1 });
+appointmentSchema.index({ 
+  doctor: 1, 
+  patient: 1, 
+  status: 1 
+});
+
+// Pre-save middleware to validate time slot
+appointmentSchema.pre('save', function(next) {
+  if (this.timeSlot.start >= this.timeSlot.end) {
+    next(new Error('End time must be after start time'));
   }
   next();
 });
 
-// Overlap checking for doctor and patient
-appointmentSchema.pre("save", async function(next) {
-  // only check if date/time/duration/doctor/patient changed or new
-  if (!this.isNew && !this.isModified("date") && !this.isModified("time") && !this.isModified("duration") && !this.isModified("doctor") && !this.isModified("patient")) {
-    return next();
+// Static method to find appointments by doctor and date range
+appointmentSchema.statics.findByDoctorAndDateRange = function(doctorId, startDate, endDate) {
+  return this.find({
+    doctor: doctorId,
+    appointmentDate: {
+      $gte: startDate,
+      $lte: endDate
+    },
+    isActive: true
+  }).populate('patient', 'name email phone');
+};
+
+// Static method to check slot availability
+appointmentSchema.statics.isSlotAvailable = function(doctorId, startTime, endTime) {
+  return this.findOne({
+    doctor: doctorId,
+    $or: [
+      {
+        $and: [
+          { 'timeSlot.start': { $lt: endTime } },
+          { 'timeSlot.end': { $gt: startTime } }
+        ]
+      }
+    ],
+    status: { $in: ['pending', 'confirmed'] },
+    isActive: true
+  }).then(existingAppointment => {
+    return !existingAppointment;
+  });
+};
+
+// Instance method to cancel appointment
+appointmentSchema.methods.cancel = function(reason, cancelledBy) {
+  if (!['pending', 'confirmed'].includes(this.status)) {
+    throw new Error('Cannot cancel appointment with current status');
   }
+  
+  this.status = 'cancelled';
+  this.cancellationReason = reason;
+  this.cancelledBy = cancelledBy;
+  this.cancellationTime = new Date();
+  
+  return this.save();
+};
 
-  const buildWindow = (dateObj, timeStr, duration) => {
-    const [h, m] = timeStr.split(":").map(Number);
-    const start = new Date(dateObj);
-    start.setHours(h, m, 0, 0);
-    const end = addMinutes(start, duration);
-    return { start, end };
-  };
-
-  const { start: thisStart, end: thisEnd } = buildWindow(this.date, this.time, this.duration);
-
-  // Helper to detect overlap
-  const overlaps = (aStart, aEnd, bStart, bEnd) => !(aEnd <= bStart || aStart >= bEnd);
-
-  // Check doctor
-  const doctorConflicts = await mongoose.model("Appointment").find({
-    _id: { $ne: this._id },
-    doctor: this.doctor,
-    status: { $in: ["pending", "confirmed"] },
-    date: this.date
-  }).lean();
-
-  for (const appt of doctorConflicts) {
-    const [h, m] = appt.time.split(":").map(Number);
-    const apptStart = new Date(appt.date);
-    apptStart.setHours(h, m, 0, 0);
-    const apptEnd = addMinutes(apptStart, appt.duration);
-    if (overlaps(thisStart, thisEnd, apptStart, apptEnd)) {
-      const err = new Error("Doctor has conflicting appointment at this time");
-      err.name = "ValidationError";
-      return next(err);
-    }
+// Instance method to reschedule appointment
+appointmentSchema.methods.reschedule = function(newStart, newEnd, newDate) {
+  if (this.status === 'cancelled' || this.status === 'completed') {
+    throw new Error('Cannot reschedule appointment with current status');
   }
-
-  // Check patient
-  const patientConflicts = await mongoose.model("Appointment").find({
-    _id: { $ne: this._id },
-    patient: this.patient,
-    status: { $in: ["pending", "confirmed"] },
-    date: this.date
-  }).lean();
-
-  for (const appt of patientConflicts) {
-    const [h, m] = appt.time.split(":").map(Number);
-    const apptStart = new Date(appt.date);
-    apptStart.setHours(h, m, 0, 0);
-    const apptEnd = addMinutes(apptStart, appt.duration);
-    if (overlaps(thisStart, thisEnd, apptStart, apptEnd)) {
-      const err = new Error("Patient has conflicting appointment at this time");
-      err.name = "ValidationError";
-      return next(err);
-    }
+  
+  if (newStart >= newEnd) {
+    throw new Error('End time must be after start time');
   }
+  
+  this.timeSlot.start = newStart;
+  this.timeSlot.end = newEnd;
+  this.appointmentDate = newDate;
+  
+  // Update timeLabel based on new times
+  const formatTime = date => date.toTimeString().slice(0, 5);
+  this.timeLabel = `${formatTime(newStart)}-${formatTime(newEnd)}`;
+  
+  return this.save();
+};
 
-  // Can't cancel or modify to cancelled/completed if appointment is in past and status change invalid
-  const now = new Date();
-  if (this.isModified("status")) {
-    const apptDateTime = new Date(this.date);
-    const [h, m] = this.time.split(":").map(Number);
-    apptDateTime.setHours(h, m, 0, 0);
+// Query helper to exclude inactive appointments
+appointmentSchema.query.active = function() {
+  return this.where({ isActive: true });
+};
 
-    if (isBefore(apptDateTime, now) && this.status === "cancelled") {
-      const err = new Error("Cannot cancel an appointment that has already passed");
-      err.name = "ValidationError";
-      return next(err);
-    }
-  }
-
-  next();
-});
-
-export const Appointment = mongoose.model("Appointment", appointmentSchema);
-
+export const Appointment = mongoose.model('Appointment', appointmentSchema);

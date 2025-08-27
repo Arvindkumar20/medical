@@ -200,3 +200,4 @@
 {"level":"info","message":"Sending notification to store","orderId":"68ac59238e79f99b67b1b9bc","service":"user-service","timestamp":"2025-08-25 18:07:55"}
 {"level":"info","message":"Store did not confirm order in 5s, trying next store","orderId":"68ac59238e79f99b67b1b9bc","service":"user-service","timestamp":"2025-08-25 18:08:00"}
 {"level":"warn","message":"Order cancelled - no store confirmation","orderId":"68ac59238e79f99b67b1b9bc","service":"user-service","timestamp":"2025-08-25 18:08:00"}
+{"level":"info","message":"User logged in: doctor@gmail.com","service":"user-service","timestamp":"2025-08-27 15:38:31"}

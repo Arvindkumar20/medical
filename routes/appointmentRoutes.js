@@ -1,75 +1,95 @@
-// routes/appointmentRoutes.js
-import express from "express";
+import express from 'express';
 import {
-  listAppointments,
-  getAppointment,
   createAppointment,
+  getAppointments,
+  getAppointment,
   updateAppointment,
-  cancelAppointment
-} from "../controllers/appointmentController.js";
-import { body, param, query } from "express-validator";
-import { protect } from "../middlewares/authMiddleware.js";
+  cancelAppointment,
+  confirmAppointment,
+  completeAppointment,
+  rescheduleAppointment,
+  checkAvailability
+} from '../controllers/appointmentController.js';
+import { authorize, protect } from '../middlewares/authMiddleware.js';
+import { validateAvailabilityCheck, validateCreateAppointment, validateReschedule, validateUpdateAppointment } from '../middlewares/appointmentValidation.js';
+import { validateIdParam, validateQueryParams } from '../middlewares/doctorValidation.js';
+import { checkAppointmentOwnership, checkDoctorAppointment } from '../middlewares/appointmentAuth.js';
+// import {
+//   validateCreateAppointment,
+//   validateUpdateAppointment,
+//   validateIdParam,
+//   validateQueryParams,
+//   validateReschedule,
+//   validateAvailabilityCheck
+// } from '../validations/appointmentValidation.js';
+// import { authenticate, authorize } from '../middleware/auth.js';
+// import { checkAppointmentOwnership, checkDoctorAppointment } from '../middleware/appointmentAuth.js';
 
 const router = express.Router();
 
-router.get(
-  "/",
-  protect,
-  [
-    query("patient").optional().isMongoId(),
-    query("doctor").optional().isMongoId(),
-    query("status").optional().isIn(["pending", "confirmed", "cancelled", "completed"]),
-    query("date").optional().isISO8601(),
-    query("page").optional().isInt({ min: 1 }),
-    query("limit").optional().isInt({ min: 1, max: 100 })
-  ],
-  listAppointments
-);
+// All routes are protected
+router.use(protect);
 
-router.get(
-  "/:id",
-  protect,
-  [param("id").isMongoId()],
-  getAppointment
-);
+// Check availability
+router.get('/availability', validateAvailabilityCheck, checkAvailability);
 
+// Get all appointments (with filtering and pagination)
+router.get('/', validateQueryParams, getAppointments);
+
+// Get appointment by ID
+router.get('/:id', validateIdParam, checkAppointmentOwnership, getAppointment);
+
+// Create a new appointment (patients and admins only)
 router.post(
-  "/",
-  protect,
-  [
-    body("doctor").isMongoId(),
-    body("symptoms").isString().isLength({ min: 10, max: 500 }),
-    body("date").isISO8601(),
-    body("time").matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
-    body("duration").optional().isInt({ min: 15, max: 120 }),
-    body("status").optional().isIn(["pending", "confirmed", "cancelled", "completed"]),
-    body("prescriptionGiven").optional().isBoolean(),
-    body("notes").optional().isString().isLength({ max: 1000 })
-  ],
+  '/',
+  authorize('patient', 'admin'),
+  validateCreateAppointment,
   createAppointment
 );
 
-router.patch(
-  "/:id",
-  protect,
-  [
-    param("id").isMongoId(),
-    body("symptoms").optional().isString().isLength({ min: 10, max: 500 }),
-    body("date").optional().isISO8601(),
-    body("time").optional().matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/),
-    body("duration").optional().isInt({ min: 15, max: 120 }),
-    body("status").optional().isIn(["pending", "confirmed", "cancelled", "completed"]),
-    body("prescriptionGiven").optional().isBoolean(),
-    body("notes").optional().isString().isLength({ max: 1000 })
-  ],
+// Update appointment (patient can update reason, doctor can update notes, diagnosis, etc.)
+router.put(
+  '/:id',
+  validateIdParam,
+  validateUpdateAppointment,
+  checkAppointmentOwnership,
   updateAppointment
 );
 
-router.delete(
-  "/:id",
-  protect,
-  [param("id").isMongoId()],
+// Cancel appointment (patient, doctor, or admin)
+router.patch(
+  '/:id/cancel',
+  validateIdParam,
+  checkAppointmentOwnership,
   cancelAppointment
+);
+
+// Confirm appointment (doctor only)
+router.patch(
+  '/:id/confirm',
+  validateIdParam,
+  authorize('doctor', 'admin'),
+  checkDoctorAppointment,
+  confirmAppointment
+);
+
+// Complete appointment (doctor only)
+router.patch(
+  '/:id/complete',
+  validateIdParam,
+  authorize('doctor', 'admin'),
+  checkDoctorAppointment,
+  completeAppointment
+);
+
+// Reschedule appointment (patient or admin)
+router.patch(
+  '/:id/reschedule',
+  validateIdParam,
+  validateReschedule,
+  authorize('patient', 'admin'),
+  checkAppointmentOwnership,
+  rescheduleAppointment
 );
 
 export const appointmentRouter= router;
