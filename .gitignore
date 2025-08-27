@@ -63,3 +63,4 @@ dump/
 
 # Misc
 *.tgz
+firebase-service-account.json
