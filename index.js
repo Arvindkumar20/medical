@@ -11,7 +11,7 @@ import { parentCategory } from "./routes/parentCategoryRoutes.js";
 import { orderRouter } from "./routes/orderRoutes.js";
 import { medicalUploadRouter } from "./routes/medicalUploadRoutes.js";
 // import { paymentRouter } from "./routes/paymentRoutes.js";
-import docProductRoute from './routes/docProductRoute.js';
+// import docProductRoute from './routes/docProductRoute.js';
 import { createUploadsDir } from "./utils/fileUtils.js";
 import { cartRouter } from "./routes/cartRoute.js";
 import { notificationRouter } from "./routes/notificationRoutes.js";
@@ -19,6 +19,7 @@ import { fcmTokenRouter } from "./routes/notificationToken.js";
 import cors from "cors";
 import { doctorRouter } from "./routes/doctorRoutes.js";
 import { medicineRouter } from "./routes/medicineRoutes.js";
+import { appointmentRouter } from "./routes/appointmentRoutes.js";
 
 const app = express();
 
@@ -40,11 +41,11 @@ app.use("/api/order", orderRouter);
 app.use("/api/upload-medical-report", medicalUploadRouter);
 app.use("/api/cart", cartRouter)
 
-app.use('/api/products', docProductRoute);
+// app.use('/api/products', docProductRoute);
 app.use('/api/notifications', notificationRouter);
 app.use("/api/fcm-token", fcmTokenRouter);
 app.use('/api/doctors', doctorRouter);
-app.use('/api/appointment', doctorRouter);
+app.use('/api/appointment', appointmentRouter);
 app.use('/api/medicine', medicineRouter);
 
 // Create uploads directory;

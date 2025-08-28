@@ -17,24 +17,24 @@ const notificationSchema = new mongoose.Schema(
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Store",
-      required: [true, "Store ID is required"],
-      validate: {
-        validator: function(value) {
-          return mongoose.Types.ObjectId.isValid(value);
-        },
-        message: "Invalid store ID format"
-      }
+      // required: [true, "Store ID is required"],
+      // validate: {
+      //   validator: function(value) {
+      //     return mongoose.Types.ObjectId.isValid(value);
+      //   },
+      //   message: "Invalid store ID format"
+      // }
     },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
-      required: [true, "Product ID is required"],
-      validate: {
-        validator: function(value) {
-          return mongoose.Types.ObjectId.isValid(value);
-        },
-        message: "Invalid product ID format"
-      }
+      // required: [true, "Product ID is required"],
+      // validate: {
+      //   validator: function(value) {
+      //     return mongoose.Types.ObjectId.isValid(value);
+      //   },
+      //   message: "Invalid product ID format"
+      // }
     },
     message: {
       type: String,
@@ -53,7 +53,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: {
-        values: ["order", "reminder", "offer", "system", "custom"],
+        values: ["order", "reminder", "offer", "system", "custom","Booking"],
         message: "Notification type must be one of: order, reminder, offer, system, custom"
       },
       default: "custom",

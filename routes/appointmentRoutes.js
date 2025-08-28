@@ -42,7 +42,7 @@ router.get('/:id', validateIdParam, checkAppointmentOwnership, getAppointment);
 // Create a new appointment (patients and admins only)
 router.post(
   '/',
-  authorize('patient', 'admin'),
+  authorize('patient', 'admin','customer'),
   validateCreateAppointment,
   createAppointment
 );

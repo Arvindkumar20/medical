@@ -3,6 +3,7 @@ import { Appointment } from '../models/Appointment.js';
 import { DoctorProfile } from '../models/DoctorProfile.js';
 import { User } from '../models/User.js';
 import moment from 'moment-timezone';
+import { sendNotification } from '../utils/globalNotificationService.js';
 
 // Helper function to handle errors
 const handleError = (res, status, message, error = null) => {
@@ -15,18 +16,98 @@ const handleError = (res, status, message, error = null) => {
 };
 
 // Create a new appointment
+// export const createAppointment = async (req, res) => {
+//   try {
+//     // Check for validation errors
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Validation failed',
+//         errors: errors.array()
+//       });
+//     }
+
+//     const {
+//       doctor,
+//       appointmentDate,
+//       timeSlot,
+//       duration,
+//       consultationType,
+//       reason,
+//       amount
+//     } = req.body;
+
+//     // Check if doctor exists and is verified
+//     const doctorProfile = await DoctorProfile.findById(doctor);
+//     if (!doctorProfile || !doctorProfile.isActive) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Doctor not found or not available'
+//       });
+//     }
+
+//     if (!doctorProfile.isVerified) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Doctor is not verified'
+//       });
+//     }
+
+//     // Check if the time slot is available
+//     const isAvailable = await Appointment.isSlotAvailable(
+//       doctor,
+//       new Date(timeSlot.start),
+//       new Date(timeSlot.end)
+//     );
+
+//     if (!isAvailable) {
+//       return res.status(409).json({
+//         success: false,
+//         message: 'Time slot is not available'
+//       });
+//     }
+
+//     // Create new appointment
+//     const appointment = new Appointment({
+//       doctor,
+//       patient: req.user.id,
+//       appointmentDate: new Date(appointmentDate),
+//       timeSlot: {
+//         start: new Date(timeSlot.start),
+//         end: new Date(timeSlot.end)
+//       },
+//       duration,
+//       consultationType,
+//       reason,
+//       amount,
+//       currency: req.body.currency || 'USD',
+//       timeLabel: `${moment(timeSlot.start).format('HH:mm')}-${moment(timeSlot.end).format('HH:mm')}`
+//     });
+
+//     const savedAppointment = await appointment.save();
+    
+//     // Populate doctor and patient details
+//     await savedAppointment.populate('doctor', 'user specialization')
+//                          .populate('patient', 'name email phone');
+    
+//     await savedAppointment.populate({
+//       path: 'doctor',
+//       populate: { path: 'user', select: 'name email' }
+//     });
+
+//     res.status(201).json({
+//       success: true,
+//       message: 'Appointment created successfully',
+//       data: savedAppointment
+//     });
+//   } catch (error) {
+//     handleError(res, 500, 'Error creating appointment', error);
+//   }
+// };
+
 export const createAppointment = async (req, res) => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
     const {
       doctor,
       appointmentDate,
@@ -34,74 +115,58 @@ export const createAppointment = async (req, res) => {
       duration,
       consultationType,
       reason,
-      amount
+      amount,
     } = req.body;
 
-    // Check if doctor exists and is verified
-    const doctorProfile = await DoctorProfile.findById(doctor);
-    if (!doctorProfile || !doctorProfile.isActive) {
-      return res.status(404).json({
-        success: false,
-        message: 'Doctor not found or not available'
-      });
+    const doctorProfile = await DoctorProfile.findById(doctor).populate("user");
+    if (!doctorProfile || !doctorProfile.isActive || !doctorProfile.isVerified) {
+      return res.status(400).json({ success: false, message: "Doctor not available" });
     }
 
-    if (!doctorProfile.isVerified) {
-      return res.status(400).json({
-        success: false,
-        message: 'Doctor is not verified'
-      });
-    }
-
-    // Check if the time slot is available
-    const isAvailable = await Appointment.isSlotAvailable(
-      doctor,
-      new Date(timeSlot.start),
-      new Date(timeSlot.end)
-    );
-
-    if (!isAvailable) {
-      return res.status(409).json({
-        success: false,
-        message: 'Time slot is not available'
-      });
-    }
-
-    // Create new appointment
+    // slot check logic yaha rahega...
     const appointment = new Appointment({
       doctor,
       patient: req.user.id,
-      appointmentDate: new Date(appointmentDate),
+      appointmentDate,
       timeSlot: {
         start: new Date(timeSlot.start),
-        end: new Date(timeSlot.end)
+        end: new Date(timeSlot.end),
       },
       duration,
       consultationType,
       reason,
       amount,
-      currency: req.body.currency || 'USD',
-      timeLabel: `${moment(timeSlot.start).format('HH:mm')}-${moment(timeSlot.end).format('HH:mm')}`
+      currency: req.body.currency || "USD",
+      timeLabel: `${moment(timeSlot.start).format("HH:mm")}-${moment(timeSlot.end).format("HH:mm")}`,
     });
 
     const savedAppointment = await appointment.save();
-    
-    // Populate doctor and patient details
-    await savedAppointment.populate('doctor', 'user specialization')
-                         .populate('patient', 'name email phone');
-    
-    await savedAppointment.populate({
-      path: 'doctor',
-      populate: { path: 'user', select: 'name email' }
+
+    // ✅ Ab notification bhejna doctor ko
+    const notificationResult = await sendNotification({
+      userId: doctorProfile.user._id,
+      fcmToken: doctorProfile.user.fcmToken, // doctor ke user model me fcmToken hona chahiye
+      title: "New Appointment",
+      body: `You have a new appointment on ${moment(appointmentDate).format("DD MMM YYYY")} at ${appointment.timeLabel}`,
+      data: { appointmentId: savedAppointment._id.toString() },
+      type: "appointment",
     });
+
+    if (!notificationResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: "Appointment created but failed to notify doctor",
+        error: notificationResult.error,
+      });
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Appointment created successfully',
-      data: savedAppointment
+      message: "Appointment created & doctor notified",
+      data: savedAppointment,
     });
   } catch (error) {
-    handleError(res, 500, 'Error creating appointment', error);
+    res.status(500).json({ success: false, message: "Error creating appointment", error: error.message });
   }
 };
 

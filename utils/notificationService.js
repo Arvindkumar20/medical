@@ -31,8 +31,8 @@ export const handleStoreNotification = async (orderId, shippingAddress, quantity
 
       await sendNotification(shippingAddress, store.id, orderId, total, quantity);
 
-      // Wait for store confirmation (5 seconds)
-      await sleep(5000);
+      // Wait for store confirmation (10 seconds)
+      await sleep(10000);
 
       const order = await Order.findById(orderId);
       if (order && order.orderStatus === "confirmed") {
