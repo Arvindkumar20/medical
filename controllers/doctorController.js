@@ -15,45 +15,46 @@ const handleError = (res, status, message, error = null) => {
 // Create a new doctor profile
 export const createDoctorProfile = async (req, res) => {
   try {
-    // Check for validation errors
+    // validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
+      return res.status(400).json({ success: false, message: "Validation failed", errors: errors.array() });
     }
 
-    // Check if user already has a doctor profile
+    // profile already?
     const existingProfile = await DoctorProfile.findOne({ user: req.user.id });
     if (existingProfile) {
-      return res.status(409).json({
-        success: false,
-        message: 'Doctor profile already exists for this user'
-      });
+      return res.status(409).json({ success: false, message: "Doctor profile already exists for this user" });
     }
 
-    // Create new profile
+    // uploaded files (multer ne add kiya)
+    let licenseUrl = req.files?.license ? `/uploads/doctorsLicense/${req.files.license[0].filename}` : null;
+    let certificateUrl = req.files?.certificate ? `/uploads/doctorsCertificate/${req.files.certificate[0].filename}` : null;
+
     const doctorProfile = new DoctorProfile({
       ...req.body,
-      user: req.user.id
+      user: req.user.id,
+      verificationDetails: {
+        documents: [
+          licenseUrl ? { type: "license", url: licenseUrl } : null,
+          certificateUrl ? { type: "certificate", url: certificateUrl } : null,
+        ].filter(Boolean),
+      },
     });
 
     const savedProfile = await doctorProfile.save();
-    
-    // Populate user details
-    await savedProfile.populate('user', 'name email');
-    
+    await savedProfile.populate("user", "name email");
+
     res.status(201).json({
       success: true,
-      message: 'Doctor profile created successfully',
-      data: savedProfile
+      message: "Doctor profile created successfully",
+      data: savedProfile,
     });
   } catch (error) {
-    handleError(res, 500, 'Error creating doctor profile', error);
+    handleError(res, 500, "Error creating doctor profile", error);
   }
 };
+
 
 // Get all doctor profiles with filtering and pagination
 export const getDoctorProfiles = async (req, res) => {

@@ -11,6 +11,7 @@ import {
 
 import { authorize, checkProfileOwnership, protect } from '../middlewares/authMiddleware.js';
 import { validateCreateDoctorProfile, validateIdParam, validateQueryParams, validateUpdateDoctorProfile } from '../middlewares/doctorValidation.js';
+import { uploadDoctorFiles } from '../middlewares/uploadDoctorFiles.js';
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.post(
   '/',
   authorize('doctor', 'admin'),
   validateCreateDoctorProfile,
+  uploadDoctorFiles,
   createDoctorProfile
 );
 
